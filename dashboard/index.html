@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LingoBot Pro Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .status { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        
+        #chat-box { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; background: #fafafa; }
+        .message { margin: 5px 0; padding: 8px; border-radius: 8px; max-width: 80%; }
+        .user { background: #007bff; color: white; margin-left: auto; }
+        .bot { background: #e9ecef; color: black; }
+        
+        input[type="text"] { width: 70%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; border-radius: 5px; border: none; background: #007bff; color: white; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🤖 LingoBot Debugger</h2>
+        <p>Status: <span id="status" class="status disconnected">Disconnected</span></p>
+    </div>
+
+    <div class="card">
+        <div id="chat-box"></div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="messageInput" placeholder="Type a message (e.g., Hello in Spanish)..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📊 Real-time Data</h3>
+        <pre id="debug-log" style="font-size: 0.8em; color: #666; overflow-x: auto;"></pre>
+    </div>
+
+    <script>
+        const clientId = "debug_user_" + Math.floor(Math.random() * 1000);
+        const ws = new WebSocket(`ws://localhost:8000/ws/${clientId}`);
+        const statusSpan = document.getElementById('status');
+        const debugLog = document.getElementById('debug-log');
+
+        ws.onopen = () => {
+            statusSpan.textContent = "Connected";
+            statusSpan.className = "status connected";
+            log("WebSocket Connected as " + clientId);
+        };
+
+        ws.onclose = () => {
+            statusSpan.textContent = "Disconnected";
+            statusSpan.className = "status disconnected";
+            log("WebSocket Disconnected");
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === "chat_response") {
+                addMessage(data.data.text, 'bot');
+                log("Received: " + JSON.stringify(data.data));
+            } else {
+                log("System: " + JSON.stringify(data));
+            }
+        };
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                // Add to UI
+                addMessage(text, 'user');
+                
+                // Send to Server
+                ws.send(JSON.stringify({
+                    type: "chat",
+                    message: text,
+                    language: "es" // Default testing language
+                }));
+                
+                input.value = '';
+            }
+        }
+
+        function addMessage(text, sender) {
+            const box = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = `message ${sender}`;
+            div.textContent = text;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function log(msg) {
+            debugLog.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+        }
+    </script>
+</body>
+</html>

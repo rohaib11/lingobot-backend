@@ -1,0 +1,22 @@
+@'
+fastapi
+uvicorn
+pydantic
+python-dotenv
+groq
+gTTS
+openai-whisper
+deep-translator
+redis
+pyjwt
+passlib
+bcrypt
+sqlalchemy
+numpy
+sentence-transformers
+nltk
+aiofiles
+python-multipart
+websockets
+slowapi
+'@ | Out-File -Encoding utf8 requirements.txt

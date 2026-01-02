@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis_db:6379  # Connects to the service below
+      - GROQ_API_KEY=${GROQ_API_KEY}     # We will set these on the server
+    depends_on:
+      - redis_db
+    volumes:
+      - ./lingobot.db:/app/lingobot.db   # Saves database to disk so it survives restarts
+
+  redis_db:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
