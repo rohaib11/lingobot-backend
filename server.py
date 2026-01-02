@@ -91,7 +91,7 @@ if not api_key:
 client = Groq(api_key=api_key)
 
 # 2. DATABASE & CACHE SETUP
-DATABASE_URL = "sqlite:///./lingobot.db"
+DATABASE_URL = "sqlite:////app/lingobot.db"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
